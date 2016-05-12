@@ -25,8 +25,8 @@ lines(u1$hp2,col="red")
 index1=u1$dT1>12
 index2=u1$dT2>12
 
-plot(u1$id[index],u1$hp1[index],type="l")
-lines(u1$id[index],u1$hp2[index],col="red")
+plot(u1$id[index1],u1$hp1[index1],type="l")
+lines(u1$id[index2],u1$hp2[index2],col="red")
 
 ampch1<-function(vout){
   0.012 * vout - 0.094 #cal 5-02-16 alice & mike
@@ -103,7 +103,7 @@ plot(u2$hp1,type="l")
 lines(u2$hp2,col="red")
 
 ampch1<-function(vout){
-  0.012 * vout - 0.094 #cal 5-02-16 alice & mike
+  0.012 * vout + 0.094 #cal 5-02-16 alice & mike
 }
 ampch2<-function(vout){
   0.0118 * vout - 0.5235 #cal 5-02-16 alice & mike
@@ -114,6 +114,9 @@ u2$hp1flux1<-u2$hp1preamp1/0.06
 
 u2$hp2preamp2<-ampch2(u2$hp2)
 u2$hp2flux2<-u2$hp2preamp2/0.06
+
+plot(u2$id[index1],u2$hp1flux1[index1],type="l")
+lines(u2$id[index2],u2$hp2flux2[index2],col="red")
 
 #index=10000:20000
 
@@ -190,12 +193,12 @@ u3$hp2flux2<-u3$hp2preamp2/0.06
 #index=10000:20000
 
 mypar(2,1)
-plot(u3$T1[index1],u3$hp1flux1[index1],ylim=c(-50,50))
+plot(u3$T1[index1],u3$hp1flux1[index1],ylim=c(-10,10))
 fit1<-lm(u3$hp1flux1[index1]~u3$T1[index1])
 abline(fit1$coefficients[1],fit1$coefficients[2],col="red")
 fit1$coefficients[2]
 
-plot(u3$T3[index2],u3$hp2flux2[index2],ylim=c(-50,50))
+plot(u3$T3[index2],u3$hp2flux2[index2],ylim=c(-10,10))
 fit2<-lm(u3$hp2flux2[index2]~u3$T3[index2])
 abline(fit2$coefficients[1],fit2$coefficients[2],col="red")
 fit2$coefficients[2]
@@ -237,16 +240,19 @@ ampch2<-function(vout){
   0.0118 * vout - 0.5235 #cal 5-02-16 alice & mike
 }
 
-u4$hp2preamp1<-ampch1(u4$hp2)
-u4$hp2flux1<-u4$hp2preamp1/0.06
+u4$hp1preamp1<-ampch1(u4$hp2)
+u4$hp1flux1<-u4$hp1preamp1/0.06
 
 u4$hp2preamp2<-ampch2(u4$hp2)
 u4$hp2flux2<-u4$hp2preamp2/0.06
 
 
+plot(u4$Tin[index],u4$hp1flux1[index])
+fit1<-lm(u4$hp1flux1[index]~u4$Tin[index])
+abline(fit1$coefficients[1],fit1$coefficients[2],col="red")
+fit1$coefficients[2]
+
 plot(u4$Tin[index],u4$hp2flux2[index])
-fit<-lm(u4$hp2flux1[index]~u4$Tin[index])
-abline(fit$coefficients[1],fit$coefficients[2],col="red")
-fit$coefficients[2]
-
-
+fit2<-lm(u4$hp2flux2[index]~u4$Tin[index])
+abline(fit2$coefficients[1],fit2$coefficients[2],col="red")
+fit2$coefficients[2]
