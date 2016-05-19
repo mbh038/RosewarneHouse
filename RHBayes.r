@@ -91,28 +91,41 @@ LL <- function(R1,R2,Tm_init,C, mu, sigma) {
 }
 
 
-u
+library(stats4)
+fit1<-mle(LL, 
+         start = list(R1=1.7,R2=0.804,Tm_init=15.4,C=1364000,sigma=1),
+         fixed=list(mu=0),
+         nobs = length(Q),
+         lower = c(1.5, .5,14,1000000,0.1), 
+         upper = c(2,1.5,17,2000000,5),
+         method= "L-BFGS-B"
+)
 
 
-Q<-Qt(coef(fit)[1],coef(fit)[2],coef(fit)[3],coef(fit)[4])
+Q<-Qt(coef(fit1)[1],coef(fit1)[2],coef(fit1)[3],coef(fit1)[4])
 lines(Q,col="green")
 
-#Unit mle results
+#Unit 1mle results
+
+
+# > summary(fit1)
+# Maximum likelihood estimation
+# 
 # Call:
-#     mle(minuslogl = LL, start = list(R1 = 1.71, R2 = 1, Tm_init = 15.4, 
-#                                      C = 1364000, sigma = 1), method = "L-BFGS-B", fixed = list(mu = 0), 
-#         nobs = length(Q), lower = c(1, 0.1, 10, 1e+06, 0), upper = c(3, 
-#                                                                      3, 20, 2e+06, 5))
+#   mle(minuslogl = LL, start = list(R1 = 1.7, R2 = 0.804, Tm_init = 15.4, 
+#                                    C = 1364000, sigma = 1), method = "L-BFGS-B", fixed = list(mu = 0), 
+#       nobs = length(Q), lower = c(1.5, 0.5, 14, 1e+06, 0.1), upper = c(2, 
+#                                                                        1.5, 17, 2e+06, 5))
 # 
 # Coefficients:
-#     Estimate Std. Error
-# R1      1.847540e+00 0.03788928
-# R2      8.041011e-01 0.04438734
-# Tm_init 1.507905e+01 0.13360146
+#   Estimate Std. Error
+# R1      1.855844e+00 0.03805128
+# R2      7.968969e-01 0.04439677
+# Tm_init 1.504286e+01 0.13473623
 # C       1.364000e+06        NaN
-# sigma   2.754651e+00 0.01044703
+# sigma   2.756117e+00 0.01045259
 # 
-# -2 log L: 169103.2
+# -2 log L: 169140.2 
 
 #Unit 4 (A)
 
@@ -208,7 +221,7 @@ LL <- function(R1,R2,Tm_init,C, mu, sigma) {
 
 
 library(stats4)
-fit<-mle(LL, 
+fit4<-mle(LL, 
          start = list(R1=2.9,R2=0.804,Tm_init=15.4,C=1364000,sigma=1),
          fixed=list(mu=0),
          nobs = length(Q),
@@ -218,24 +231,146 @@ fit<-mle(LL,
          )
 
 
-Q<-Qt(coef(fit)[1],coef(fit)[2],coef(fit)[3],coef(fit)[4])
+Q<-Qt(coef(fit4)[1],coef(fit4)[2],coef(fit4)[3],coef(fit4)[4])
 lines(Q,col="green")
 
-#Unit 4 mle results
+# Unit 4 mle results
+
+# > summary(fit4)
 # Maximum likelihood estimation
 # 
 # Call:
-#     mle(minuslogl = LL, start = list(R1 = 2.9, R2 = 0.804, Tm_init = 15.4, 
-#                                      C = 1364000, sigma = 1), method = "L-BFGS-B", fixed = list(mu = 0), 
-#         nobs = length(Q), lower = c(2, 0.5, 14, 1e+06, 0.1), upper = c(4, 
-#                                                                        1.5, 17, 2e+06, 5))
+#   mle(minuslogl = LL, start = list(R1 = 2.9, R2 = 0.804, Tm_init = 15.4, 
+#                                    C = 1364000, sigma = 1), method = "L-BFGS-B", fixed = list(mu = 0), 
+#       nobs = length(Q), lower = c(2, 0.5, 14, 1e+06, 0.1), upper = c(4, 
+#                                                                      1.5, 17, 2e+06, 5))
 # 
 # Coefficients:
-#     Estimate   Std. Error
-# R1      2.720612e+00          NaN
-# R2      7.231661e-01 0.0051402457
-# Tm_init 1.498265e+01          NaN
-# C       1.364000e+06 4.6717021928
-# sigma   1.000000e-01 0.0002112173
+#   Estimate   Std. Error
+# R1      2.245651e+00 0.0073095141
+# R2      7.071604e-01 0.0061709265
+# Tm_init 1.634550e+01 0.0104006367
+# C       1.364000e+06          NaN
+# sigma   1.024635e-01 0.0008096988
 # 
-# -2 log L: 9159.363 
+# -2 log L: -13751.36 
+
+## Unit 3 (B)
+
+u3<-read.csv("26-02-to-18-03 unit3 2-3test.prn",sep="\t",stringsAsFactors=FALSE)
+id<-seq(1,nrow(u3))
+u3<-cbind(id,u3)
+names(u3)<-c("id","date","time","T1","T2","T3","T4","hp1","hp2")
+
+library(rafalib)
+mypar(2,1)
+plot(u3$T1,type="l") # inside
+lines(u3$T2,col=2) # outside
+lines(u3$T3,col=3) # inside
+lines(u3$T4,col=4) # outside
+
+# amplifier functions
+ampch1<-function(vout){
+  0.012 * vout - 0.094 #cal 5-02-16 alice & mike
+}
+ampch2<-function(vout){
+  0.0118 * vout - 0.5235 #cal 5-02-16 alice & mike
+}
+
+# heat plate plots
+u3$hp1preamp1<-ampch1(u3$hp1)
+u3$hp1flux1<-u3$hp1preamp1/0.06
+
+u3$hp2preamp2<-ampch2(u3$hp2)
+u3$hp2flux2<-u3$hp2preamp2/0.06
+
+index<-which(u3$hp2flux2<19 & u3$hp2flux2> -5 )
+
+index=1000:29000
+
+plot(u3$T1[index]-u3$T2[index],type="l")
+lines(u3$T3[index]-u3$T4[index],col="blue")
+
+plot(u3$hp1flux1,type="l")
+lines(u3$hp2flux2,col="blue")
+
+plot(u3$id[index],u3$hp1flux1[index],type="l",ylim=c(-10,10))
+plot(u3$id[index],u3$hp2flux2[index],col="blue",type="l",ylim=c(0,20))
+
+Qexp<-u3$hp2flux2[index]
+Tint<-u3$T3[index]
+Text<-u3$T4[index]
+t=u3$id[index]
+
+Tm=numeric()
+Q=numeric()
+
+mypar(1,1)
+R1=1.847
+R2=0.804
+C=1364000
+Tm_init=15.08
+tau=60
+
+Qt<-function(R1,R2,Tm_init,C){
+  Tm[1]=Tm_init
+  for (i in 1:(length(index)-1)){
+    dt=60*(t[i+1]-t[i])
+    Q[i]=(Tint[i]-Tm[i])/R1
+    Tm[i+1]=((Tint[i+1]/R1)+(Text[i+1]/R2)+C*Tm[i]/dt)/(1/R1 + 1/R2 + C/dt)
+  }
+  Q+40
+}
+
+Q<-numeric()
+Q<-Qt(R1,R2,Tm_init,C)
+Qexp<-Qexp[-1]
+Qexp<-Qexp+40 # investigate effect of constant offset to Qexp
+
+plot(Qexp,type="l",ylim=c(min(min(Q),min(Qexp)),max(max(Q),max(Qexp))),xlab="Time (min)",ylab="Heat flux Q (W/m^2)",col="red")
+lines(Q,col="blue")
+legend("topright", c("Measured", "Predicted"), pch="o", col=c("red", "blue"))
+
+
+LL <- function(R1,R2,Tm_init,C, mu, sigma) {
+  R = Qexp-Qt(R1,R2,Tm_init,C)
+  #
+  R = suppressWarnings(dnorm(R, mu, sigma, log = TRUE))
+  #
+  -sum(R)
+}
+
+
+library(stats4)
+fit3<-mle(LL, 
+          start = list(R1=1.,R2=1.5,Tm_init=15.4,C=1364000,sigma=1),
+          fixed=list(mu=0),
+          nobs = length(Q),
+          lower = c(0.5, 1.5,14,1000000,0.1), 
+          upper = c(2,5.5,17,2000000,5),
+          method= "L-BFGS-B"
+)
+
+
+Q<-Qt(coef(fit3)[1],coef(fit3)[2],coef(fit3)[3],coef(fit3)[4])
+lines(Q,col="black")
+
+# > summary(fit3)
+# Maximum likelihood estimation
+# 
+# Call:
+#   mle(minuslogl = LL, start = list(R1 = 1, R2 = 1.5, Tm_init = 15.4, 
+#                                    C = 1364000, sigma = 1), method = "L-BFGS-B", fixed = list(mu = 0), 
+#       nobs = length(Q), lower = c(0.5, 1.5, 14, 1e+06, 0.1), upper = c(2, 
+#                                                                        5.5, 17, 2e+06, 5))
+# 
+# Coefficients:
+#   Estimate   Std. Error
+# R1      9.860949e-01  0.016495383
+# R2      3.666079e+00  0.128259298
+# Tm_init 1.666274e+01  0.038342541
+# C       1.364000e+06 34.952543937
+# sigma   2.443805e+00  0.009971234
+# 
+# -2 log L: 138906.5
+
