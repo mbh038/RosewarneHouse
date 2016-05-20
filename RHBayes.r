@@ -1,3 +1,6 @@
+# Hukseflux heat Flux Meter
+rhfm=0.00625 # W/m2
+  
 # amplifier functions
 ampch1<-function(vout){
     0.012 * vout - 0.094 #cal 5-02-16 alice & mike
@@ -88,10 +91,15 @@ fit4p<-mle(LL,
           upper = c(2,2.,17,2000000,5),
           method= "L-BFGS-B"
 )
-summary(fit4p)
+
 
 Q<-Qt(coef(fit4p)[1],coef(fit4p)[2],coef(fit4p)[3],coef(fit4p)[4])
 lines(Q,col="green")
+
+summary(fit4p)
+
+U4bare=1/(coef(fit4p)[1]+coef(fit4p)[2]-rhfm)
+U4bare
 
 # unit 4 results prior to insulation
 
@@ -211,6 +219,10 @@ fit1<-mle(LL,
 
 Q<-Qt(coef(fit1)[1],coef(fit1)[2],coef(fit1)[3],coef(fit1)[4])
 lines(Q,col="green")
+
+summary(fit1)
+U1=1/(coef(fit1)[1]+coef(fit1)[2]-rhfm)
+U1
 
 #Unit 1mle results
 
@@ -341,6 +353,10 @@ fit4<-mle(LL,
 Q<-Qt(coef(fit4)[1],coef(fit4)[2],coef(fit4)[3],coef(fit4)[4])
 lines(Q,col="green")
 
+summary(fit4)
+U4=1/(coef(fit4)[1]+coef(fit4)[2]-rhfm)
+U4
+
 # Unit 4 mle results
 
 # > summary(fit4)
@@ -405,8 +421,7 @@ plot(u3$id[index],u3$hp1flux1[index],type="l",ylim=c(-10,10))
 plot(u3$id[index],u3$hp2flux2[index],col="blue",type="l",ylim=c(0,20))
 
 Qexp<-u3$hp2flux2[index]
-Tint<-u3$T3[index]
-Text<-u3$T4[index]
+Tint<-u3$T3[index]v
 t=u3$id[index]
 
 Tm=numeric()
