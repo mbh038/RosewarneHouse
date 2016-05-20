@@ -1,3 +1,20 @@
+### Analyses of Stable Block units at Rosewarne House
+
+### Unit 1 pre-insulation
+
+u1p<-read.csv("30-11.prn",sep="\t",stringsAsFactors=FALSE)
+id<-seq(1,nrow(u1p))
+u1p<-cbind(id,u1p)
+names(u1p)<-c("id","date","time","T1","T2","T3","T4","hp1","hp2")
+
+library(rafalib)
+mypar(2,1)
+plot(u1p$T1,type="l") # outside
+lines(u1p$T2,col=2) # inside
+lines(u1p$T3,col=3) # inside
+lines(u1p$T4,col=4) # outside
+
+
 ### Unit 1
 
 u1<-read.csv("18-03-to-15-04 unit1.prn",sep="\t",stringsAsFactors=FALSE)

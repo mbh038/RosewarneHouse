@@ -1,7 +1,122 @@
-R1=1
-R2=1
-C=200000
-TMinit=12
+# amplifier functions
+ampch1<-function(vout){
+    0.012 * vout - 0.094 #cal 5-02-16 alice & mike
+}
+ampch2<-function(vout){
+    0.0118 * vout - 0.5235 #cal 5-02-16 alice & mike
+}
+
+### Unit 4 (A)  pre-insulation
+
+u4p<-read.csv("30-11.prn",sep="\t",stringsAsFactors=FALSE)
+id<-seq(1,nrow(u4p))
+u4p<-cbind(id,u4p)
+names(u4p)<-c("id","date","time","T1","T2","T3","T4","hp1","hp2")
+
+ymax=max(u4p$T2)
+ymin=min(u4p$T1)
+
+library(rafalib)
+mypar(2,1)
+plot(u4p$T1,type="l",ylim=c(ymin,ymax)) # outside
+lines(u4p$T2,col=2) # inside
+lines(u4p$T3,col=3) # inside
+lines(u4p$T4,col=4) # outside
+
+index=u4p$id>200 & u4p$id<4450
+
+# heat plate plots
+u4p$hp1preamp1<-ampch1(u4p$hp1)
+u4p$hp1flux1<-u4p$hp1preamp1/0.06
+
+u4p$hp2preamp2<-ampch2(u4p$hp2)
+u4p$hp2flux2<-u4p$hp2preamp2/0.06
+
+
+plot(u4p$id[index],u4p$hp1flux1[index],type="l")
+plot(u4p$id[index],u4p$hp2flux2[index],col="blue",type="l")
+
+Qexp<-u4p$hp1flux1[index]
+Qexp<- -Qexp[-1]+15
+Tint<-u4p$T3[index]
+Text<-u4p$T4[index]
+t=u4p$id[index]
+
+Tm=numeric()
+Q=numeric()
+
+mypar(1,1)
+R1=0.4
+R2=0.4
+C=13640
+Tm_init=9
+tau=60
+
+Qt<-function(R1,R2,Tm_init,C){
+    Tm[1]=Tm_init
+    for (i in 1:(length(t)-1)){
+        dt=60*(t[i+1]-t[i])
+        Q[i]=(Tint[i]-Tm[i])/R1
+        Tm[i+1]=((Tint[i+1]/R1)+(Text[i+1]/R2)+C*Tm[i]/dt)/(1/R1 + 1/R2 + C/dt)
+    }
+    Q
+}
+
+Q<-Qt(R1,R2,Tm_init,C)
+
+
+plot(Qexp,type="l",ylim=c(min(min(Q),min(Qexp)),max(max(Q),max(Qexp))),xlab="Time (min)",ylab="Heat flux Q (W/m^2)",col="red")
+lines(Q,col="blue")
+legend("topright", c("Measured", "Predicted"), pch="o", col=c("red", "blue"))
+
+
+LL <- function(R1,R2,Tm_init,C, mu, sigma) {
+    R = Qexp-Qt(R1,R2,Tm_init,C)
+    #
+    R = suppressWarnings(dnorm(R, mu, sigma, log = TRUE))
+    #
+    -sum(R)
+}
+
+
+library(stats4)
+fit4p<-mle(LL, 
+          start = list(R1=0.4,R2=0.4,Tm_init=9,C=13640,sigma=1),
+          fixed=list(mu=0),
+          nobs = length(Q),
+          lower = c(.01,.01,1,10000,0.1), 
+          upper = c(2,2.,17,2000000,5),
+          method= "L-BFGS-B"
+)
+summary(fit4p)
+
+Q<-Qt(coef(fit4p)[1],coef(fit4p)[2],coef(fit4p)[3],coef(fit4p)[4])
+lines(Q,col="green")
+
+# unit 4 results prior to insulation
+
+# > summary(fit1p)
+# Maximum likelihood estimation
+# 
+# Call:
+#     mle(minuslogl = LL, start = list(R1 = 0.4, R2 = 0.4, Tm_init = 10, 
+#                                      C = 13640, sigma = 1), method = "L-BFGS-B", fixed = list(mu = 0), 
+#         nobs = length(Q), lower = c(0.1, 0.1, 5, 10000, 0.1), upper = c(1, 
+#                                                                         1, 17, 2e+06, 5))
+# 
+# Coefficients:
+#     Estimate   Std. Error
+# R1      2.112901e-01 1.442814e-02
+# R2      2.753128e-01 1.640017e-02
+# Tm_init 8.786037e+00 2.301874e-01
+# C       1.364001e+04 4.139823e+03
+# sigma   1.361637e+00 2.916912e-02
+# 
+# -2 log L: 14677.89 
+
+
+
+## UNIT 1
 
 u1<-read.csv("18-03-to-15-04 unit1.prn",sep="\t",stringsAsFactors=FALSE)
 id<-seq(1,nrow(u1))
@@ -20,14 +135,6 @@ lines(u1$T2-u1$T4,col="blue")
  
 #index=u1$T2-u1$T4>-1 & u1$T2-u1$T4<0
  
-# amplifier functions
-ampch1<-function(vout){
-    0.012 * vout - 0.094 #cal 5-02-16 alice & mike
-}
-ampch2<-function(vout){
-    0.0118 * vout - 0.5235 #cal 5-02-16 alice & mike
-}
-
 # heat plate plots
 u1$hp1preamp1<-ampch1(u1$hp1)
 u1$hp1flux1<-u1$hp1preamp1/0.06
