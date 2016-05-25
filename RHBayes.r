@@ -173,8 +173,8 @@ Tm=numeric()
 Q=numeric()
 
 mypar(1,1)
-R1=1.847
-R2=0.804
+R1=1.855
+R2=0.799
 C=1364000
 Tm_init=15.08
 tau=60
