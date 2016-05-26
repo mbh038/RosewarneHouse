@@ -42,7 +42,8 @@ plot(days,tin,
      col=COL[4],
      ylim=c(0,30),
      xlab="Time (days)",
-     ylab="Temperature (deg celsius)")
+     ylab=expression(paste("Temperature "^"o","C"))
+     )
 lines(days,tout,col=COL[1])
 legend("topright", 
        c("Interior wall surface", "Exterior wall surface"), 
@@ -101,7 +102,7 @@ plot(t[index]/1440,Qexp[index],
      type="l",
      ylim=c(-5,20),
      xlab="Time (days)",
-     ylab="Heat flux Q (W/m^2)",
+     ylab=expression(paste('Heat Flux (W/',m^2,')',sep='')),
      col=COL[1])
 lines(t[index]/1440,Q[index],
       col=COL[2])
@@ -139,7 +140,8 @@ plot(days,tin,
      col=COL[4],
      ylim=c(0,30),
      xlab="Time (days)",
-     ylab="Temperature (deg celsius)")
+     ylab=expression(paste("Temperature "^"o","C"))
+     )
 lines(days,tout,col=COL[1])
 legend("topright", 
        c("Interior wall surface", "Exterior wall surface"), 
@@ -205,7 +207,7 @@ plot(t[index]/1440,Qexp[index],
      type="l",
      ylim=c(0,3),
      xlab="Time (days)",
-     ylab="Heat flux Q (W/m^2)",
+     ylab=expression(paste('Heat Flux (W/',m^2,')',sep='')),
      col=COL[1])
 lines(t[index]/1440,Q[index],
       col=COL[2])
@@ -215,4 +217,104 @@ legend("topright",
        col=c(COL[1], COL[2])
 )
 text(3,0,"Unit 4 (A), R = 2.96",pos=4)
+dev.off()
+
+## UNIT 4 pre-retrofit
+
+u4p<-read.table("unit4preRetrofit30-11.csv",sep=",",stringsAsFactors=FALSE,header=TRUE)
+id<-seq(1,nrow(u4p))
+u4p<-cbind(id,u4p)
+names(u4p)<-c("id","datetime","T1","T2","T3","T4","hp1","hp2")
+
+index=200:(nrow(u4p)-20)
+library(TTR)
+tin<-u4p$T2
+tin<-SMA(tin,5)
+tout<-u4p$T4
+tout<-SMA(tout,5)
+
+
+library(rafalib)
+library(openintro)
+data(COL)
+mypar(1,1)
+
+days<-seq(1,nrow(u4p))/1440
+
+png("./figures/temperatures_U4preRetrofit.png",width=595,height=642)
+plot(days[index],tin[index],
+     type="l",
+     col=COL[4],
+     ylim=c(5,15),
+     xlab="Time (days)",
+     ylab=expression(paste("Temperature "^"o","C"))
+     )
+lines(days[index],tout[index],col=COL[1])
+legend("topright", 
+       c("Interior wall surface", "Exterior wall surface"), 
+       lwd=2, 
+       col=c(COL[4], COL[1])
+)
+text(0,5,"Unit 4 (A) (no insulation)",pos=4)
+dev.off()
+
+#index=u4$T2-u4$T4>-1 & u4$T2-u4$T4<0
+
+
+# heat plate plots
+u4p$hp1preamp1<-ampch1(u4p$hp1)
+u4p$hp1flux1<-u4p$hp1preamp1/0.06
+
+u4p$hp2preamp2<-ampch2(u4p$hp2)
+u4p$hp2flux2<-u4p$hp2preamp2/0.06
+
+index=200:(nrow(u4p)-20)
+
+Qexp<--u4p$hp2flux2[index]+15
+Tint<-tin[index]
+Text<-tout[index]
+t=u4p$id[index]
+
+Tm=numeric()
+Q=numeric()
+
+mypar(1,1)
+R1=.55 # celotex
+R2=0.22 # as per unit 1, stone wall
+C=1364
+Tm_init=5.65
+tau=60
+
+Qt<-function(R1,R2,Tm_init,C){
+    Tm[1]=Tm_init
+    for (i in 1:length(t)){
+        dt=60*(t[i+1]-t[i])
+        Q[i]=(Tint[i]-Tm[i])/R1
+        Tm[i+1]=((Tint[i+1]/R1)+(Text[i+1]/R2)+C*Tm[i]/dt)/(1/R1 + 1/R2 + C/dt)
+    }
+    Q
+}
+
+Q<-Qt(R1,R2,Tm_init,C)
+#Qexp<-Qexp[-1]
+
+Qexp<-Qexp+mean(Q-Qexp)
+
+png("./figures/heatflux_U4preRetrofit.png",width=595,height=642)
+plot(t[index]/1440,Qexp[index],
+     type="l",
+     xlim=c(0,3.5),
+     ylim=c(0,8),
+     xlab="Time (days)",
+     #ylab=parse(text=paste0("Heat Flux W/m","^2")),
+     ylab=expression(paste('Heat Flux (W/',m^2,')',sep='')),
+     col=COL[1])
+lines(t[index]/1440,Q[index],
+      col=COL[2])
+legend("topright", 
+       c("Measured", "Predicted"), 
+       lwd=2, 
+       col=c(COL[1], COL[2])
+)
+text(0,0,"Unit 4 (A) pre-insulation, R = 0.76",pos=4)
 dev.off()
