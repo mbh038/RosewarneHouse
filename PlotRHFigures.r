@@ -20,9 +20,10 @@ names(u1)<-c("id","date","time","T1","T2","T3","T4","hp1","hp2")
 library(TTR)
 
 library(rafalib)
+mypar(b=2,a=2)
 library(openintro)
 data(COL)
-mypar(1,1)
+#mypar(1,1)
 
 # plot(u1$T2,type="l",col=COL[1]) # outside
 # lines(u1$T4,col=COL[2]) # outside
@@ -33,25 +34,6 @@ tin<-(u1$T1+u1$T3)/2
 tin<-SMA(tin,5)
 tout<-(u1$T2+u1$T4)/2
 tout<-SMA(tout,5)
-
-days<-seq(1,nrow(u1))/1440
-
-png("./figures/temperatures_U1.png",width=595,height=642)
-plot(days,tin,
-     type="l",
-     col=COL[4],
-     ylim=c(0,30),
-     xlab="Time (days)",
-     ylab=expression(paste("Temperature "^"o","C"))
-     )
-lines(days,tout,col=COL[1])
-legend("topright", 
-       c("Interior wall surface", "Exterior wall surface"), 
-       lwd=2, 
-       col=c(COL[4], COL[1])
-)
-text(0,0,"Unit 1 (D)",pos=4)
-dev.off()
 
 # heat plate plots
 u1$hp1preamp1<-ampch1(u1$hp1)
@@ -65,8 +47,30 @@ index=index & u1$hp1flux1>-7
 index = index & u1$hp2flux2<30
 index = index & u1$hp2flux2>0
 
+days<-seq(1,nrow(u1))/1440
+
+#mypar(2,2)
+#par(mfcol=c(2,2)) 
+png("./figures/paper/U1U4.png",width=300,height=321)
+plot(days[index],tin[index],
+     type="l",
+     col=COL[4],
+     ylim=c(0,30),
+     xlab="Time (days)",
+     ylab=expression(paste("Temperature "^"o","C"))
+)
+lines(days[index],tout[index],col=COL[1])
+legend("bottomright", 
+       c("Interior wall surface", "Exterior wall surface"), 
+       lwd=2, 
+       col=c(COL[4], COL[1]),
+       cex=0.7
+       )
+text(0,0,"Unit 1 (D)",pos=4,cex=0.9)
+#dev.off()
+
 # 5 min average
-u1$hp2flux2<-SMA(u1$hp2flux2,5)
+u1$hp2flux2<-SMA(u1$hp2flux2,20)
 #plot(u1$id[index],u1$hp2flux2[index],col="blue",type="l",ylim=c(0,20))
 
 Qexp<-u1$hp2flux2[index]
@@ -77,7 +81,7 @@ t=u1$id[index]
 Tm=numeric()
 Q=numeric()
 
-mypar(1,1)
+#mypar(1,1)
 R1=1.8
 R2=0.804
 C=1364000
@@ -97,22 +101,23 @@ Qt<-function(R1,R2,Tm_init,C){
 Q<-Qt(R1,R2,Tm_init,C)
 Qexp<-Qexp[-1]
 
-png("./figures/heatflux_U1.png",width=595,height=642)
+#png("./figures/heatflux_U1.png",width=595,height=642)
 plot(t[index]/1440,Qexp[index],
      type="l",
      ylim=c(-5,20),
      xlab="Time (days)",
      ylab=expression(paste('Heat Flux (W/',m^2,')',sep='')),
-     col=COL[1])
+     col=COL[6])
 lines(t[index]/1440,Q[index],
       col=COL[2])
-legend("topright", 
+legend("bottomright", 
        c("Measured", "Predicted"), 
        lwd=2, 
-       col=c(COL[1], COL[2])
+       col=c(COL[6], COL[2]),
+       cex=0.7
        )
-text(0,-5,"Unit 1 (D), R=3.6",pos=4)
-dev.off()
+text(0,-5,"Unit 1 (D), R=2.65",pos=4,cex=0.9)
+#dev.off()
 
 ## UNIT 4
 
@@ -130,26 +135,29 @@ library(TTR)
 library(rafalib)
 library(openintro)
 data(COL)
-mypar(1,1)
+#mypar(1,1)
 
 days<-seq(1,nrow(u4))/1440
 
-png("./figures/temperatures_U4.png",width=595,height=642)
-plot(days,tin,
+index=2000:10000
+#png("./figures/temperatures_U4.png",width=595,height=642)
+plot(days[index],tin[index],
      type="l",
      col=COL[4],
      ylim=c(0,30),
+     xlim=c(3,7),
      xlab="Time (days)",
      ylab=expression(paste("Temperature "^"o","C"))
      )
-lines(days,tout,col=COL[1])
-legend("topright", 
+lines(days[index],tout[index],col=COL[1])
+legend("bottomright", 
        c("Interior wall surface", "Exterior wall surface"), 
        lwd=2, 
-       col=c(COL[4], COL[1])
-)
-text(0,0,"Unit 4 (A)",pos=4)
-dev.off()
+       col=c(COL[4], COL[1]),
+       cex=0.7
+       )
+text(3,0,"Unit 4 (A)",pos=4,cex=0.9)
+#dev.off()
 
 #index=u4$T2-u4$T4>-1 & u4$T2-u4$T4<0
 
@@ -161,7 +169,10 @@ u4$hp1flux1<-u4$hp1preamp1/0.06
 u4$hp2preamp2<-ampch2(u4$hp2)
 u4$hp2flux2<-u4$hp2preamp2/0.06
 
-index=2000:10000
+# 5 min average
+u4$hp2flux2<-SMA(u4$hp2flux2,20)
+
+index=4320:10000
 
 # plot(u4$T1[index]-u4$T4[index],type="l")
 # lines(u4$T2[index]-u4$T4[index],col="blue")
@@ -180,7 +191,7 @@ t=u4$id[index]
 Tm=numeric()
 Q=numeric()
 
-mypar(1,1)
+#mypar(1,1)
 R1=2.25 # celotex
 R2=0.71 # as per unit 1, stone wall
 C=1364000
@@ -202,21 +213,23 @@ Q<-Qt(R1,R2,Tm_init,C)
 
 Qexp<-Qexp+mean(Q-Qexp)
 
-png("./figures/heatflux_U4.png",width=595,height=642)
-plot(t[index]/1440,Qexp[index],
+#png("./figures/heatflux_U4.png",width=595,height=642)
+plot(t/1440,Qexp,
      type="l",
      ylim=c(0,3),
+     xlim=c(3,7),
      xlab="Time (days)",
      ylab=expression(paste('Heat Flux (W/',m^2,')',sep='')),
-     col=COL[1])
-lines(t[index]/1440,Q[index],
+     col=COL[6])
+lines(t/1440,Q,
       col=COL[2])
-legend("topright", 
+legend("bottomright", 
        c("Measured", "Predicted"), 
        lwd=2, 
-       col=c(COL[1], COL[2])
-)
-text(3,0,"Unit 4 (A), R = 2.96",pos=4)
+       col=c(COL[6], COL[2]),
+       cex=0.7
+       )
+text(3,0,"Unit 4 (A), R = 2.96",pos=4,cex=0.9)
 dev.off()
 
 ## UNIT 4 pre-retrofit
@@ -318,3 +331,9 @@ legend("topright",
 )
 text(0,0,"Unit 4 (A) pre-insulation, R = 0.76",pos=4)
 dev.off()
+
+sse<-c(2829,10132,1971)
+ssc<-c(576,886,627.2)
+de<-c(2873,3114,1972)
+dc<-c(585,622,627)
+
