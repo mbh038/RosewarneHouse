@@ -51,7 +51,7 @@ days<-seq(1,nrow(u1))/1440
 
 #mypar(2,2)
 #par(mfcol=c(2,2)) 
-png("./figures/paper/U1U4.png",width=300,height=321)
+
 plot(days[index],tin[index],
      type="l",
      col=COL[4],
@@ -230,6 +230,8 @@ legend("bottomright",
        cex=0.7
        )
 text(3,0,"Unit 4 (A), R = 2.96",pos=4,cex=0.9)
+
+png("./figures/paper/U1U4v2.png",width=595,height=550)
 dev.off()
 
 ## UNIT 4 pre-retrofit
@@ -336,4 +338,32 @@ sse<-c(2829,10132,1971)
 ssc<-c(576,886,627.2)
 de<-c(2873,3114,1972)
 dc<-c(585,622,627)
+
+### Usage figures
+
+emb<-c(458,458,138,138,183,183,80,80,792,792,298,298)
+iu<-c(48.3,47.4,8.9,8.8,87.1,58.6,16.1,10.8,22.1,22.1,4.1,4.1)
+
+sb<-data.frame(cbind(emb,iu))
+
+sb$Cottage<-as.factor(c(rep("A",4),rep("D",4),rep("N",4)))
+sb$model<-as.factor(rep(c("Steady State Heat Flow Model","Dynamic Heat Flow Model"),6))
+sb$model = factor(sb$model,levels(sb$model)[c(2,1)]) # reorder the factors
+eExp<-expression(paste('Lifetime Energy (kWh/',m^2,')',sep=''))
+cExp<-expression(paste('Lifetime Carbon (kg C',O[2],'/',m^2,')',sep=''))
+sb$metric=as.factor(rep(c("Specific Lifetime Energy (kWh)","Specific Lifetime Energy (kWh)","Specific Lifetime Carbon (kgCO2)","Specific Lifetime Carbon (kgCO2)"),3))
+sb$metric = factor(sb$metric,levels(sb$metric)[c(2,1)]) # reorder the factors
+
+sb<-sb[c(3,5,4,1,2)] # reorder the columns
+lifetime<-50
+sb$lifetime<-sb$emb/lifetime+sb$iu
+
+library(ggplot2)
+
+png("./figures/paper/EC.png",width=595,height=350)
+g<-ggplot(data=sb,aes(x=Cottage,y=lifetime,fill=Cottage))+geom_bar(stat="identity")+facet_grid(metric~ model,scales="free")
+
+g<-g+theme(axis.title.y=element_blank(),legend.position="none")
+g
+dev.off()
 
