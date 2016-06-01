@@ -1,8 +1,7 @@
 # Plot Rosewarne House figures
 
 # Hukseflux heat Flux Meter
-rhfm=0.00625 # W/m2
-
+f
 # amplifier functions
 ampch1<-function(vout){
     0.012 * vout - 0.094 #cal 5-02-16 alice & mike
