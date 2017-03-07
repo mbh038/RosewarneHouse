@@ -1,7 +1,7 @@
 # Plot Rosewarne House figures
 
 # Hukseflux heat Flux Meter
-f
+
 # amplifier functions
 ampch1<-function(vout){
     0.012 * vout - 0.094 #cal 5-02-16 alice & mike
@@ -341,7 +341,9 @@ dc<-c(585,622,627)
 ### Usage figures
 
 emb<-c(458,458,138,138,183,183,80,80,792,792,298,298)
-iu<-c(48.3,47.4,8.9,8.8,87.1,58.6,16.1,10.8,22.1,22.1,4.1,4.1)
+#A ,D ,NEW BUILD
+# iu<-c(48.3,47.4,8.9,8.8,87.1,58.6,16.1,10.8,22.1,22.1,4.1,4.1)
+iu<-c(48.3,47.4,8.9,8.8,76.6,44.3,14.2,8.19,22.1,22.1,4.1,4.1)
 
 sb<-data.frame(cbind(emb,iu))
 
@@ -365,4 +367,7 @@ g<-ggplot(data=sb,aes(x=Cottage,y=lifetime,fill=Cottage))+geom_bar(stat="identit
 g<-g+theme(axis.title.y=element_blank(),legend.position="none")
 g
 dev.off()
+
+#Air Quality
+
 
